@@ -71,17 +71,22 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
               onChange={(e) => onSelectPreset(e.target.value)}
               className="bg-slate-900 text-white text-xs font-bold py-1.5 px-3 rounded border border-slate-600 focus:outline-none focus:border-blue-500 cursor-pointer"
             >
-              <option value="hvac">❄️ HVAC - Heating & Cooling</option>
-              <option value="plumbing">🚰 Plumbing & Drain Service</option>
-              <option value="roofing">🏠 Roofing & Construction</option>
-              <option value="electricians">⚡ Electrical Services</option>
-              <option value="garage-door">🚪 Garage Door Service</option>
-              <option value="locksmith">🔑 Locksmith & Security</option>
-              <option value="pest-control">🐜 Pest Control</option>
-              <option value="landscaping">🌿 Landscaping & Lawn Care</option>
-              <option value="cleaning">🧹 Cleaning Services</option>
-              <option value="painting">🎨 Painting Services</option>
-              <option value="handyman">🛠️ Handyman & Home Repair</option>
+              <optgroup label="🏆 Active Client Configurations">
+                <option value="demo-tarot">🏆 Demo Business (Tarot Coaching)</option>
+              </optgroup>
+              <optgroup label="🛠️ Industry Demo Presets">
+                <option value="hvac">❄️ HVAC - Heating & Cooling</option>
+                <option value="plumbing">🚰 Plumbing & Drain Service</option>
+                <option value="roofing">🏠 Roofing & Construction</option>
+                <option value="electricians">⚡ Electrical Services</option>
+                <option value="garage-door">🚪 Garage Door Service</option>
+                <option value="locksmith">🔑 Locksmith & Security</option>
+                <option value="pest-control">🐜 Pest Control</option>
+                <option value="landscaping">🌿 Landscaping & Lawn Care</option>
+                <option value="cleaning">🧹 Cleaning Services</option>
+                <option value="painting">🎨 Painting Services</option>
+                <option value="handyman">🛠️ Handyman & Home Repair</option>
+              </optgroup>
             </select>
           </div>
         )}

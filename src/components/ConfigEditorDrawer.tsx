@@ -896,11 +896,49 @@ export const ConfigEditorDrawer: React.FC<ConfigEditorDrawerProps> = ({
                 </p>
               </div>
 
+              {/* SECTION: SAMPLE DATA NOTICE */}
+              <div className="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-3">
+                <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+                  <h3 className="font-extrabold text-white text-sm flex items-center gap-1.5">
+                    <span>⚠️ Sample Data Notice Banner</span>
+                  </h3>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="sampleDataNoticeEnabled"
+                      checked={config.sampleDataNoticeEnabled === true}
+                      onChange={(e) => handleFieldChange('sampleDataNoticeEnabled', e.target.checked)}
+                      className="w-4 h-4 rounded bg-slate-900 border-slate-700 text-amber-500 focus:ring-amber-500 cursor-pointer"
+                    />
+                    <label htmlFor="sampleDataNoticeEnabled" className="text-white font-bold cursor-pointer text-xs">
+                      Enable Sample Data Notice
+                    </label>
+                  </div>
+                </div>
+                <p className="text-[11px] text-slate-400">
+                  When enabled, displays a banner warning that claims, reviews, and stats are sample template placeholders. Keep disabled for client production sites.
+                </p>
+              </div>
+
               {/* SECTION: HERO COPY */}
               <div className="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-3">
-                <h3 className="font-extrabold text-white text-sm border-b border-slate-800 pb-2 flex items-center gap-1.5">
-                  <span>🚀 Hero Section Wording</span>
-                </h3>
+                <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+                  <h3 className="font-extrabold text-white text-sm flex items-center gap-1.5">
+                    <span>🚀 Hero Section Wording & Trust Badges</span>
+                  </h3>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="heroTrustBadgesEnabled"
+                      checked={config.heroTrustBadgesEnabled === true}
+                      onChange={(e) => handleFieldChange('heroTrustBadgesEnabled', e.target.checked)}
+                      className="w-4 h-4 rounded bg-slate-900 border-slate-700 text-amber-500 focus:ring-amber-500 cursor-pointer"
+                    />
+                    <label htmlFor="heroTrustBadgesEnabled" className="text-white font-bold cursor-pointer text-xs">
+                      Enable Hero Trust Badges
+                    </label>
+                  </div>
+                </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
@@ -965,7 +1003,7 @@ export const ConfigEditorDrawer: React.FC<ConfigEditorDrawerProps> = ({
                     rows={2}
                     value={config.heroSubheadline || ''}
                     onChange={(e) => handleFieldChange('heroSubheadline', e.target.value)}
-                    placeholder="Licensed contractors in your area. Upfront flat-rate pricing, zero hidden fees."
+                    placeholder="Reliable AC repair, water jet servicing, gas charging, and installation across Ernakulam & Kochi."
                     className="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white focus:border-amber-500 outline-none"
                   />
                 </div>
@@ -987,7 +1025,7 @@ export const ConfigEditorDrawer: React.FC<ConfigEditorDrawerProps> = ({
                       type="text"
                       value={config.heroSecondaryCtaText ?? ''}
                       onChange={(e) => handleFieldChange('heroSecondaryCtaText', e.target.value)}
-                      placeholder="e.g. Get Free Quote"
+                      placeholder="e.g. Request AC Service"
                       className="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white focus:border-amber-500 outline-none"
                     />
                   </div>
@@ -1026,7 +1064,7 @@ export const ConfigEditorDrawer: React.FC<ConfigEditorDrawerProps> = ({
                       type="text"
                       value={config.whyUsHeading ?? ''}
                       onChange={(e) => handleFieldChange('whyUsHeading', e.target.value)}
-                      placeholder="e.g. Why Homeowners Trust Our Team"
+                      placeholder="e.g. Why Customers Choose Our AC Services"
                       className="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white focus:border-amber-500 outline-none font-bold"
                     />
                   </div>
@@ -1095,7 +1133,7 @@ export const ConfigEditorDrawer: React.FC<ConfigEditorDrawerProps> = ({
                       type="text"
                       value={config.servicesEyebrow ?? ''}
                       onChange={(e) => handleFieldChange('servicesEyebrow', e.target.value)}
-                      placeholder="e.g. Our Core Services"
+                      placeholder="e.g. Our Services"
                       className="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white focus:border-amber-500 outline-none"
                     />
                   </div>
@@ -1105,7 +1143,7 @@ export const ConfigEditorDrawer: React.FC<ConfigEditorDrawerProps> = ({
                       type="text"
                       value={config.servicesHeading ?? ''}
                       onChange={(e) => handleFieldChange('servicesHeading', e.target.value)}
-                      placeholder="e.g. Comprehensive Local Trade Solutions"
+                      placeholder="e.g. Professional Trade & Service Solutions"
                       className="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white focus:border-amber-500 outline-none font-bold"
                     />
                   </div>
@@ -1366,7 +1404,7 @@ export const ConfigEditorDrawer: React.FC<ConfigEditorDrawerProps> = ({
                     rows={2}
                     value={config.serviceAreaDescription ?? ''}
                     onChange={(e) => handleFieldChange('serviceAreaDescription', e.target.value)}
-                    placeholder="Our mobile trucks are stationed across the metropolitan area for prompt on-site service."
+                    placeholder="We provide prompt doorstep AC service across Ernakulam, Kochi and nearby areas."
                     className="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white focus:border-amber-500 outline-none"
                   />
                 </div>
@@ -1379,12 +1417,26 @@ export const ConfigEditorDrawer: React.FC<ConfigEditorDrawerProps> = ({
                 </h3>
 
                 <div>
+                  <label className="block text-slate-300 font-bold mb-1">Lead Form Status / Badge</label>
+                  <input
+                    type="text"
+                    value={config.leadFormStatusText ?? ''}
+                    onChange={(e) => handleFieldChange('leadFormStatusText', e.target.value)}
+                    placeholder="e.g. AC SERVICE AVAILABLE"
+                    className="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white focus:border-amber-500 outline-none"
+                  />
+                  <p className="text-[11px] text-slate-400 mt-1">
+                    Optional text displayed above the lead form. Leave empty to hide it.
+                  </p>
+                </div>
+
+                <div>
                   <label className="block text-slate-300 font-bold mb-1">Form Card Heading (finalCtaHeading)</label>
                   <input
                     type="text"
                     value={config.finalCtaHeading ?? ''}
                     onChange={(e) => handleFieldChange('finalCtaHeading', e.target.value)}
-                    placeholder="e.g. Request Immediate Service"
+                    placeholder="e.g. Request AC Service"
                     className="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white focus:border-amber-500 outline-none font-bold"
                   />
                 </div>
@@ -1410,13 +1462,41 @@ export const ConfigEditorDrawer: React.FC<ConfigEditorDrawerProps> = ({
                     className="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white focus:border-amber-500 outline-none"
                   />
                 </div>
+
+                <div>
+                  <label className="block text-slate-300 font-bold mb-1">Lead Form Trust Text</label>
+                  <input
+                    type="text"
+                    value={config.leadFormTrustText ?? ''}
+                    onChange={(e) => handleFieldChange('leadFormTrustText', e.target.value)}
+                    placeholder="e.g. 🔒 Zero spam guarantee"
+                    className="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white focus:border-amber-500 outline-none"
+                  />
+                  <p className="text-[11px] text-slate-400 mt-1">
+                    Optional small text displayed below the lead form button. Leave empty to hide it.
+                  </p>
+                </div>
               </div>
 
               {/* SECTION: FOOTER COPY */}
               <div className="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-3">
-                <h3 className="font-extrabold text-white text-sm border-b border-slate-800 pb-2 flex items-center gap-1.5">
-                  <span>👣 Footer Copy</span>
-                </h3>
+                <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+                  <h3 className="font-extrabold text-white text-sm flex items-center gap-1.5">
+                    <span>👣 Footer Copy & Emergency Contact</span>
+                  </h3>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="footerEmergencyEnabled"
+                      checked={config.footerEmergencyEnabled === true}
+                      onChange={(e) => handleFieldChange('footerEmergencyEnabled', e.target.checked)}
+                      className="w-4 h-4 rounded bg-slate-900 border-slate-700 text-amber-500 focus:ring-amber-500 cursor-pointer"
+                    />
+                    <label htmlFor="footerEmergencyEnabled" className="text-white font-bold cursor-pointer text-xs">
+                      Enable Footer Emergency Contact
+                    </label>
+                  </div>
+                </div>
 
                 <div>
                   <label className="block text-slate-300 font-bold mb-1">Footer Business Description (footerDescription)</label>

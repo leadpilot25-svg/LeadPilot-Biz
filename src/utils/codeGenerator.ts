@@ -58,10 +58,15 @@ export function generateStylesCss(config: ClientConfig): string {
 
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: 5rem;
   font-family: var(--font-family);
   color: var(--text-main);
   background-color: var(--bg-body);
   line-height: 1.6;
+}
+
+section[id] {
+  scroll-margin-top: 5rem;
 }
 
 body {
@@ -105,6 +110,10 @@ button, input, select, textarea {
   cursor: pointer;
   transition: all 0.25s ease;
   white-space: nowrap;
+  min-width: 0;
+  max-width: 100%;
+  text-align: center;
+  text-decoration: none;
 }
 
 .btn-accent {
@@ -570,7 +579,7 @@ button, input, select, textarea {
   margin-bottom: 3rem;
 }
 @media (min-width: 768px) {
-  .footer-grid { grid-template-columns: 2fr 1fr 1fr; }
+  .footer-grid { grid-template-columns: 1fr 1fr; gap: 3rem; }
 }
 .footer-title {
   color: #FFFFFF;
@@ -785,11 +794,23 @@ export function generateIndexHtml(config: ClientConfig): string {
 </head>
 <body>
 
+  ${config.sampleDataNoticeEnabled === true ? `
+  <!-- SAMPLE DATA NOTICE -->
+  <div style="background:#FEF3C7; color:#78350F; padding:0.5rem 1rem; font-size:0.75rem; border-bottom:1px solid #FDE68A;">
+    <div class="container" style="display:flex; align-items:center; justify-content:space-between; gap:0.5rem; flex-wrap:wrap;">
+      <div style="display:flex; align-items:center; gap:0.5rem;">
+        <span style="background:#FDE68A; color:#451A03; font-weight:800; padding:0.15rem 0.4rem; border-radius:4px; font-size:0.65rem; text-transform:uppercase;">Sample Data Notice</span>
+        <span>Customer claims, reviews, ratings, and statistics are sample template placeholders. Replace with real client data prior to launch.</span>
+      </div>
+    </div>
+  </div>
+  ` : ''}
+
   <!-- TOP NOTIFICATION BAR -->
   <div class="top-bar">
     <div class="container">
       <div>
-        ${(config.heroStatusText === undefined || config.heroStatusText.trim() !== '') ? `<span class="top-bar-badge">${config.heroStatusText || '24/7 DISPATCH'}</span>` : ''}
+        ${config.heroStatusText && config.heroStatusText.trim() !== '' ? `<span class="top-bar-badge">${config.heroStatusText}</span>` : ''}
         ${config.emergencyAvailability ? `<span data-cfg="emergencyAvailability">${config.emergencyAvailability}</span>` : ''}
       </div>
       <div class="top-bar-info">
@@ -807,8 +828,8 @@ export function generateIndexHtml(config: ClientConfig): string {
         <span data-cfg="businessName">${config.businessName}</span>
       </a>
       <ul class="nav-links">
-        <li><a href="#services">Services</a></li>
-        <li><a href="#why-us">Why Choose Us</a></li>
+        ${config.services && config.services.length > 0 ? `<li><a href="#services">Services</a></li>` : ''}
+        ${((config.whyUsItems && config.whyUsItems.length > 0) || (config.trustBadges && config.trustBadges.length > 0)) ? `<li><a href="#why-us">Why Choose Us</a></li>` : ''}
         ${config.testimonials && config.testimonials.length > 0 ? `<li><a href="#reviews">Reviews</a></li>` : ''}
         ${config.faqs && config.faqs.length > 0 ? `<li><a href="#faqs">FAQs</a></li>` : ''}
         <li><a href="#contact">Contact</a></li>
@@ -823,7 +844,7 @@ export function generateIndexHtml(config: ClientConfig): string {
   <section class="hero-section">
     <div class="container hero-grid">
       <div>
-        ${(config.heroEyebrow !== undefined ? (config.heroEyebrow.trim() !== '' ? `<div class="hero-badge-row"><span>${config.heroEyebrow}</span></div>` : '') : (config.averageRating ? `<div class="hero-badge-row"><span>⭐ ${config.averageRating} Rating</span> | <span>${config.reviewCount || 0}+ Verified Local Reviews</span></div>` : ''))}
+        ${(config.heroEyebrow !== undefined ? (config.heroEyebrow.trim() !== '' ? `<div class="hero-badge-row"><span>${config.heroEyebrow}</span></div>` : '') : (config.testimonials && config.testimonials.length > 0 && config.averageRating ? `<div class="hero-badge-row"><span>⭐ ${config.averageRating} Rating</span> | <span>${config.reviewCount || 0}+ Verified Local Reviews</span></div>` : ''))}
         <h1 class="hero-title" data-cfg="heroTitle">
           ${config.heroTitle}
           ${config.heroTitleHighlight ? `<span style="display:block; color:#F59E0B;">${config.heroTitleHighlight}</span>` : ''}
@@ -833,15 +854,23 @@ export function generateIndexHtml(config: ClientConfig): string {
 
         <div class="hero-cta-group">
           ${(config.heroPrimaryCtaText === undefined ? true : config.heroPrimaryCtaText.trim() !== '') ? (config.phone ? `<a href="tel:${config.phoneRaw}" class="btn btn-accent phone-link">📞 ${config.heroPrimaryCtaText || `Call Now: ${config.phone}`}</a>` : `<a href="#contact" class="btn btn-accent">${config.heroPrimaryCtaText || 'Request Service'}</a>`) : ''}
-          ${(config.heroSecondaryCtaText === undefined ? true : config.heroSecondaryCtaText.trim() !== '') ? `<a href="#contact" class="btn btn-outline" style="color:#FFF; border-color:#FFF;">${config.heroSecondaryCtaText || 'Get Free Quote'}</a>` : ''}
+          ${(config.heroSecondaryCtaText === undefined ? true : config.heroSecondaryCtaText.trim() !== '') ? `<a href="#contact" class="btn btn-outline" style="color:#FFF; border-color:#FFF;">${config.heroSecondaryCtaText || 'Request AC Service'}</a>` : ''}
         </div>
+
+        ${config.heroTrustBadgesEnabled === true && ((config.trustBadges && config.trustBadges.length > 0) || (config.whyUsItems && config.whyUsItems.length > 0)) ? `
+        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:1rem; margin-top:1.5rem; padding-top:1.5rem; border-top:1px solid rgba(255,255,255,0.1); font-size:0.8rem;">
+          ${config.trustBadges && config.trustBadges.length > 0 ? config.trustBadges.slice(0, 3).map(tb => `<div>🛡️ ${tb.title}</div>`).join('') : config.whyUsItems.slice(0, 3).map(w => `<div>🛡️ ${w.title}</div>`).join('')}
+        </div>
+        ` : ''}
       </div>
 
       <div class="dispatch-card">
+        ${config.leadFormStatusText && config.leadFormStatusText.trim() !== '' ? `
         <div class="dispatch-status-badge">
           <span class="dispatch-pulse-dot"></span>
-          <span>TECHNICIANS AVAILABLE NOW</span>
+          <span>${config.leadFormStatusText}</span>
         </div>
+        ` : ''}
         <h3>${config.finalCtaHeading || 'Request Instant Priority Dispatch'}</h3>
         <p>${config.finalCtaDescription || `Fill out this form for priority emergency booking${config.cityStateZip ? ` in ${config.cityStateZip}` : ''}.`}</p>
         
@@ -868,6 +897,11 @@ export function generateIndexHtml(config: ClientConfig): string {
           </div>
           ` : ''}
           <button type="submit" class="btn btn-accent" style="width:100%;">${config.finalCtaButtonText || 'Dispatch Technician Now'}</button>
+          ${config.leadFormTrustText && config.leadFormTrustText.trim() !== '' ? `
+          <p style="font-size:0.75rem; text-align:center; color:#94A3B8; margin-top:0.5rem;">
+            ${config.leadFormTrustText}
+          </p>
+          ` : ''}
         </form>
       </div>
     </div>
@@ -894,7 +928,7 @@ export function generateIndexHtml(config: ClientConfig): string {
     <div class="container">
       <div class="section-header">
         ${(config.whyUsEyebrow === undefined || config.whyUsEyebrow.trim() !== '') ? `<div class="section-subtitle">${config.whyUsEyebrow || `Why Choose ${config.businessName}`}</div>` : ''}
-        ${(config.whyUsHeading === undefined || config.whyUsHeading.trim() !== '') ? `<h2 class="section-title">${config.whyUsHeading || 'Why Homeowners Trust Our Team'}</h2>` : ''}
+        ${(config.whyUsHeading === undefined || config.whyUsHeading.trim() !== '') ? `<h2 class="section-title">${config.whyUsHeading || 'Why Customers Choose Our AC Services'}</h2>` : ''}
         ${config.whyUsDescription ? `<p style="margin-top:0.5rem; color:var(--text-muted);">${config.whyUsDescription}</p>` : ''}
       </div>
 
@@ -1003,7 +1037,7 @@ export function generateIndexHtml(config: ClientConfig): string {
       <div class="section-header">
         <div class="section-subtitle">Local Coverage</div>
         <h2 class="section-title">${config.serviceAreaHeading || `Servicing ${config.cityStateZip || config.businessName} & Surrounding Areas`}</h2>
-        <p style="margin-top:0.5rem; color:var(--text-muted);">${config.serviceAreaDescription || 'Our mobile trucks are stationed across the area for prompt on-site service.'}</p>
+        <p style="margin-top:0.5rem; color:var(--text-muted);">${config.serviceAreaDescription || 'Providing doorstep AC repair, servicing and installation across Ernakulam, Kochi and nearby areas.'}</p>
       </div>
       ${config.serviceAreas && config.serviceAreas.length > 0 ? `
       <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:0.75rem; margin-top:1.5rem;">
@@ -1022,7 +1056,7 @@ export function generateIndexHtml(config: ClientConfig): string {
           <div class="section-subtitle">Get In Touch</div>
           <h2 class="section-title">Ready To Get Started?</h2>
           <p style="margin-bottom:1.5rem; color:var(--text-muted);">
-            Contact our friendly local team today for immediate service, upfront estimates, or emergency assistance.
+            Contact our friendly local team today for prompt service, upfront estimates, or assistance.
           </p>
           ${config.phone ? `<p style="margin-bottom:0.75rem;"><strong>📞 Phone:</strong> <a href="tel:${config.phoneRaw}" class="phone-link">${config.phone}</a></p>` : ''}
           ${config.email ? `<p style="margin-bottom:0.75rem;"><strong>✉️ Email:</strong> ${config.email}</p>` : ''}
@@ -1063,19 +1097,15 @@ export function generateIndexHtml(config: ClientConfig): string {
         <div>
           <div class="footer-title" data-cfg="businessName">${config.businessName}</div>
           <p data-cfg="tagline">${config.footerDescription !== undefined ? config.footerDescription : (config.tagline || '')}</p>
-        </div>
-        <div>
-          <div class="footer-title">Quick Links</div>
-          <ul class="footer-links">
-            <li><a href="#services">Services</a></li>
-            ${config.testimonials && config.testimonials.length > 0 ? `<li><a href="#reviews">Reviews</a></li>` : ''}
-            <li><a href="#contact">Contact</a></li>
-          </ul>
+          ${(config.address || config.cityStateZip) ? `<p style="margin-top:0.75rem; color:#cbd5e1;">📍 ${config.address ? config.address + ', ' : ''}${config.cityStateZip || ''}</p>` : ''}
         </div>
         <div>
           <div class="footer-title">Contact Info</div>
-          ${config.phone ? `<p data-cfg="phone">${config.phone}</p>` : ''}
-          ${config.cityStateZip ? `<p data-cfg="cityStateZip">${config.cityStateZip}</p>` : ''}
+          <ul class="footer-links">
+            ${config.phone ? `<li>Phone: <a href="tel:${config.phoneRaw}">${config.phone}</a></li>` : ''}
+            ${config.email ? `<li>Email: ${config.email}</li>` : ''}
+            ${config.businessHours ? `<li>Hours: ${config.businessHours}</li>` : ''}
+          </ul>
         </div>
       </div>
       <div style="border-top:1px solid rgba(255,255,255,0.1); padding-top:1.5rem; text-align:center;">
@@ -1087,7 +1117,7 @@ export function generateIndexHtml(config: ClientConfig): string {
   <!-- STICKY MOBILE BOTTOM BAR -->
   <div class="sticky-mobile-bar">
     ${config.phone ? `<a href="tel:${config.phoneRaw}" class="btn btn-accent phone-link">📞 Call ${config.phone}</a>` : ''}
-    <a href="#contact" class="btn btn-dark" style="flex:1;">Get Free Quote</a>
+    <a href="#contact" class="btn btn-dark" style="flex:1;">${config.heroSecondaryCtaText || config.finalCtaButtonText || 'Request AC Service'}</a>
   </div>
 
   <script src="config.js"></script>

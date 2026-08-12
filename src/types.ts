@@ -172,6 +172,9 @@ export interface ClientConfig {
   financingDescription?: string;
   financingCtaText?: string;
   hasEmergencyService?: boolean;
+  heroTrustBadgesEnabled?: boolean;
+  footerEmergencyEnabled?: boolean;
+  sampleDataNoticeEnabled?: boolean;
 
   // Website Copy / Custom Content Editor Fields
   heroStatusText?: string;

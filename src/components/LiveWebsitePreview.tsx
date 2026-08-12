@@ -72,6 +72,9 @@ export const LiveWebsitePreview: React.FC<LiveWebsitePreviewProps> = ({ config, 
   const displayRating = config.averageRating ?? config.googleRating ?? 0;
   const displayReviewCount = config.reviewCount ?? config.googleReviewCount ?? 0;
 
+  const isTarot = (config.industry || '').toLowerCase().includes('tarot') || (config.clientId || '').toLowerCase().includes('tarot') || (config.businessName || '').toLowerCase().includes('tarot');
+  const isHVAC = (config.industry || '').toLowerCase().includes('hvac') || (config.industry || '').toLowerCase().includes('air conditioning') || (config.clientId || '').toLowerCase().includes('hvac');
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setFormData({
       ...formData,
@@ -186,12 +189,12 @@ export const LiveWebsitePreview: React.FC<LiveWebsitePreviewProps> = ({ config, 
   };
 
   return (
-    <div className="font-sans bg-slate-50 text-slate-900 min-h-screen selection:bg-blue-100 selection:text-blue-900">
+    <div className="font-sans bg-slate-50 text-slate-900 min-h-screen selection:bg-blue-100 selection:text-blue-900 pb-20 md:pb-0">
       
       {/* ----------------------------------------------------
-         0. TEMPLATE SAMPLE DATA NOTICE BANNER (Development Mode Only)
+         0. TEMPLATE SAMPLE DATA NOTICE BANNER
       ---------------------------------------------------- */}
-      {appMode === 'development' && (
+      {config.sampleDataNoticeEnabled === true && (
         <div className="bg-amber-500/10 border-b border-amber-500/20 text-amber-900 px-4 py-1.5 text-xs">
           <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2 font-medium">
             <div className="flex items-center gap-2">
@@ -202,15 +205,17 @@ export const LiveWebsitePreview: React.FC<LiveWebsitePreviewProps> = ({ config, 
                 Customer claims, reviews, ratings, and statistics are sample template placeholders. Replace with real client data prior to launch.
               </span>
             </div>
-            <a
-              href={displayGbpUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-[11px] font-bold text-amber-900 underline hover:text-amber-700 flex items-center gap-1"
-            >
-              <span>View Client GBP</span>
-              <Search className="w-3 h-3" />
-            </a>
+            {displayGbpUrl && (
+              <a
+                href={displayGbpUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[11px] font-bold text-amber-900 underline hover:text-amber-700 flex items-center gap-1"
+              >
+                <span>View Client GBP</span>
+                <Search className="w-3 h-3" />
+              </a>
+            )}
           </div>
         </div>
       )}
@@ -221,10 +226,10 @@ export const LiveWebsitePreview: React.FC<LiveWebsitePreviewProps> = ({ config, 
       <div style={dynamicStyles.primaryBg} className="text-slate-100 text-xs py-2 border-b border-white/10">
         <div className="max-w-7xl mx-auto px-4 flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            {(config.heroStatusText === undefined || config.heroStatusText.trim() !== '') && (
+            {config.heroStatusText && config.heroStatusText.trim() !== '' && (
               <span className="bg-rose-500/20 text-rose-300 font-extrabold px-2 py-0.5 rounded text-[10px] uppercase tracking-wider border border-rose-500/30 flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-ping" />
-                {config.heroStatusText ? config.heroStatusText : '24/7 DISPATCH'}
+                {config.heroStatusText}
               </span>
             )}
             {config.emergencyAvailability && <span className="font-medium hidden sm:inline">{config.emergencyAvailability}</span>}
@@ -276,8 +281,12 @@ export const LiveWebsitePreview: React.FC<LiveWebsitePreviewProps> = ({ config, 
           </a>
 
           <nav className="hidden lg:flex items-center gap-6 font-bold text-sm text-slate-700">
-            <a href="#services" className="hover:text-blue-600 transition">Services</a>
-            <a href="#why-us" className="hover:text-blue-600 transition">Why Choose Us</a>
+            {config.services && config.services.length > 0 && (
+              <a href="#services" className="hover:text-blue-600 transition">Services</a>
+            )}
+            {((config.whyUsItems && config.whyUsItems.length > 0) || (config.trustBadges && config.trustBadges.length > 0)) && (
+              <a href="#why-us" className="hover:text-blue-600 transition">Why Choose Us</a>
+            )}
             {config.testimonials && config.testimonials.length > 0 && (
               <a href="#reviews" className="hover:text-blue-600 transition">Reviews</a>
             )}
@@ -287,15 +296,15 @@ export const LiveWebsitePreview: React.FC<LiveWebsitePreviewProps> = ({ config, 
             <a href="#contact" className="hover:text-blue-600 transition">Contact</a>
           </nav>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 shrink-0">
             {displayPhone && (
               <a
                 href={`tel:${displayPhoneRaw}`}
                 style={dynamicStyles.accentBg}
-                className="hidden sm:flex items-center gap-2 text-white text-xs font-black px-4 py-2.5 rounded-lg shadow-md hover:brightness-110 transition"
+                className="hidden sm:inline-flex items-center justify-center gap-2 text-white text-xs font-black px-3.5 sm:px-4 py-2.5 rounded-lg shadow-md hover:brightness-110 transition whitespace-nowrap min-w-0 shrink-0 text-center"
               >
-                <Phone className="w-3.5 h-3.5" />
-                <span>Call Now: {displayPhone}</span>
+                <Phone className="w-3.5 h-3.5 shrink-0" />
+                <span className="truncate">Call Now: {displayPhone}</span>
               </a>
             )}
           </div>
@@ -305,8 +314,8 @@ export const LiveWebsitePreview: React.FC<LiveWebsitePreviewProps> = ({ config, 
       {/* ----------------------------------------------------
          3. HERO SECTION
       ---------------------------------------------------- */}
-      <section style={dynamicStyles.primaryBg} className="text-white py-12 lg:py-20 relative overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+      <section id="contact" style={dynamicStyles.primaryBg} className="text-white py-12 md:py-16 lg:py-20 relative overflow-hidden scroll-mt-20 md:scroll-mt-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
           
           <div className="lg:col-span-7 space-y-6">
             {/* HERO EYEBROW / BADGE */}
@@ -316,7 +325,7 @@ export const LiveWebsitePreview: React.FC<LiveWebsitePreviewProps> = ({ config, 
                   <span>{config.heroEyebrow}</span>
                 </div>
               )
-            ) : (displayRating > 0 && displayReviewCount > 0) ? (
+            ) : (config.testimonials && config.testimonials.length > 0 && displayRating > 0 && displayReviewCount > 0) ? (
               <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 px-3 py-1 rounded-full text-xs font-semibold text-blue-200">
                 <div className="flex text-amber-400">
                   {[...Array(5)].map((_, i) => (
@@ -325,12 +334,11 @@ export const LiveWebsitePreview: React.FC<LiveWebsitePreviewProps> = ({ config, 
                 </div>
                 <span><strong>{displayRating}</strong> Rating ({displayReviewCount}+ Verified Local Reviews)</span>
               </div>
-            ) : (
+            ) : config.tagline ? (
               <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 px-3 py-1 rounded-full text-xs font-semibold text-blue-200">
-                <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                <span>Verified Local Trade Specialist</span>
+                <span>{config.tagline}</span>
               </div>
-            )}
+            ) : null}
 
             {/* HERO HEADLINE */}
             <h1 className="text-3xl sm:text-5xl font-black tracking-tight leading-tight">
@@ -358,19 +366,19 @@ export const LiveWebsitePreview: React.FC<LiveWebsitePreviewProps> = ({ config, 
                   <a
                     href={`tel:${displayPhoneRaw}`}
                     style={dynamicStyles.accentBg}
-                    className="flex items-center gap-2 text-white font-extrabold text-base px-6 py-3.5 rounded-xl shadow-xl hover:scale-105 transition"
+                    className="inline-flex items-center justify-center gap-2 text-white font-extrabold text-sm sm:text-base px-5 sm:px-6 py-3.5 rounded-xl shadow-xl hover:scale-[1.02] transition whitespace-nowrap min-w-0 max-w-full text-center"
                   >
-                    <Phone className="w-5 h-5 animate-bounce" />
-                    <span>{config.heroPrimaryCtaText || `Call Now: ${displayPhone}`}</span>
+                    <Phone className="w-5 h-5 animate-bounce shrink-0" />
+                    <span className="truncate">{config.heroPrimaryCtaText || `Call Now: ${displayPhone}`}</span>
                   </a>
                 ) : (
                   <a
                     href="#contact"
                     style={dynamicStyles.accentBg}
-                    className="flex items-center gap-2 text-white font-extrabold text-base px-6 py-3.5 rounded-xl shadow-xl hover:scale-105 transition"
+                    className="inline-flex items-center justify-center gap-2 text-white font-extrabold text-sm sm:text-base px-5 sm:px-6 py-3.5 rounded-xl shadow-xl hover:scale-[1.02] transition whitespace-nowrap min-w-0 max-w-full text-center"
                   >
-                    <Send className="w-5 h-5" />
-                    <span>{config.heroPrimaryCtaText || 'Request Service'}</span>
+                    <Send className="w-5 h-5 shrink-0" />
+                    <span className="truncate">{config.heroPrimaryCtaText || 'Request Service'}</span>
                   </a>
                 )
               )}
@@ -379,27 +387,32 @@ export const LiveWebsitePreview: React.FC<LiveWebsitePreviewProps> = ({ config, 
               {(config.heroSecondaryCtaText === undefined ? true : config.heroSecondaryCtaText.trim() !== '') && (
                 <a
                   href="#contact"
-                  className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold text-base px-6 py-3.5 rounded-xl border border-white/20 transition"
+                  className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold text-sm sm:text-base px-5 sm:px-6 py-3.5 rounded-xl border border-white/20 transition whitespace-nowrap min-w-0 max-w-full text-center"
                 >
-                  <span>{config.heroSecondaryCtaText || 'Get Free Quote'}</span>
+                  <span className="truncate">{config.heroSecondaryCtaText || (isTarot ? 'Request Guidance' : isHVAC ? 'Request AC Service' : 'Request Service')}</span>
                 </a>
               )}
             </div>
 
-            <div className="grid grid-cols-3 gap-4 pt-6 border-t border-white/10 text-xs">
-              <div className="flex items-center gap-2">
-                <ShieldCheck className="w-5 h-5 text-emerald-400 shrink-0" />
-                <span>Licensed & Insured</span>
+            {config.heroTrustBadgesEnabled === true && ((config.trustBadges && config.trustBadges.length > 0) || (config.whyUsItems && config.whyUsItems.length > 0)) && (
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 pt-6 border-t border-white/10 text-xs">
+                {config.trustBadges && config.trustBadges.length > 0 ? (
+                  config.trustBadges.slice(0, 3).map((tb, idx) => (
+                    <div key={idx} className="flex items-center gap-2">
+                      <ShieldCheck className="w-5 h-5 text-emerald-400 shrink-0" />
+                      <span>{tb.title}</span>
+                    </div>
+                  ))
+                ) : config.whyUsItems && config.whyUsItems.length > 0 ? (
+                  config.whyUsItems.slice(0, 3).map((item, idx) => (
+                    <div key={idx} className="flex items-center gap-2">
+                      <ShieldCheck className="w-5 h-5 text-emerald-400 shrink-0" />
+                      <span>{item.title}</span>
+                    </div>
+                  ))
+                ) : null}
               </div>
-              <div className="flex items-center gap-2">
-                <DollarSign className="w-5 h-5 text-emerald-400 shrink-0" />
-                <span>Upfront Pricing</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Award className="w-5 h-5 text-emerald-400 shrink-0" />
-                <span>100% Warranty</span>
-              </div>
-            </div>
+            )}
           </div>
 
           {/* DISPATCH TICKET FORM CARD */}
@@ -407,12 +420,14 @@ export const LiveWebsitePreview: React.FC<LiveWebsitePreviewProps> = ({ config, 
             <div className="bg-white text-slate-900 rounded-2xl p-6 shadow-2xl border-2 border-blue-500/30">
               <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-4">
                 <div>
-                  <span className="bg-emerald-100 text-emerald-800 text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider flex items-center gap-1.5 inline-flex">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-                    Priority Dispatch Active
-                  </span>
-                  <h3 style={dynamicStyles.primaryText} className="text-lg font-black mt-2">
-                    {config.finalCtaHeading || 'Request Immediate Service'}
+                  {config.leadFormStatusText && config.leadFormStatusText.trim() !== '' && (
+                    <span className="bg-emerald-100 text-emerald-800 text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider flex items-center gap-1.5 inline-flex">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+                      {config.leadFormStatusText}
+                    </span>
+                  )}
+                  <h3 style={dynamicStyles.primaryText} className={`text-lg font-black ${config.leadFormStatusText && config.leadFormStatusText.trim() !== '' ? 'mt-2' : ''}`}>
+                    {config.finalCtaHeading || 'Request Service'}
                   </h3>
                   {config.finalCtaDescription && (
                     <p className="text-xs text-slate-500 mt-0.5">{config.finalCtaDescription}</p>
@@ -476,7 +491,7 @@ export const LiveWebsitePreview: React.FC<LiveWebsitePreviewProps> = ({ config, 
                       required
                       value={formData.name}
                       onChange={handleInputChange}
-                      placeholder="e.g. John Miller"
+                      placeholder="e.g. Anil Kumar"
                       className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs text-slate-900 focus:bg-white focus:border-blue-500 focus:outline-none transition"
                     />
                   </div>
@@ -490,7 +505,7 @@ export const LiveWebsitePreview: React.FC<LiveWebsitePreviewProps> = ({ config, 
                         required
                         value={formData.phone}
                         onChange={handleInputChange}
-                        placeholder="(555) 000-0000"
+                        placeholder="+91 98765 43210"
                         className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs text-slate-900 focus:bg-white focus:border-blue-500 focus:outline-none transition"
                       />
                     </div>
@@ -514,25 +529,29 @@ export const LiveWebsitePreview: React.FC<LiveWebsitePreviewProps> = ({ config, 
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">Service Details & Notes</label>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      {isTarot ? "Session Details & Notes" : "Service Details & Notes"}
+                    </label>
                     <textarea
                       name="details"
                       rows={2}
                       value={formData.details}
                       onChange={handleInputChange}
-                      placeholder="Describe the problem or request (e.g. AC blowing warm air)..."
+                      placeholder={isTarot ? "Tell us what you'd like guidance on (e.g. career, relationships, or personal growth)..." : isHVAC ? "Describe the problem or request (e.g. AC blowing warm air)..." : "Describe the problem or service details..."}
                       className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs text-slate-900 focus:bg-white focus:border-blue-500 focus:outline-none transition resize-none"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">Street Address</label>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      {isTarot ? "Location / Session Preference" : "Street Address"}
+                    </label>
                     <input
                       type="text"
                       name="address"
                       value={formData.address}
                       onChange={handleInputChange}
-                      placeholder={`e.g. 123 Main St, ${config.cityStateZip}`}
+                      placeholder={isTarot ? "Online or in-person in Kochi" : `e.g. 123 Main St, ${config.cityStateZip}`}
                       className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs text-slate-900 focus:bg-white focus:border-blue-500 focus:outline-none transition"
                     />
                   </div>
@@ -548,14 +567,16 @@ export const LiveWebsitePreview: React.FC<LiveWebsitePreviewProps> = ({ config, 
                     ) : (
                       <>
                         <Send className="w-4 h-4" />
-                        <span>{config.finalCtaButtonText || 'Dispatch Priority Technician'}</span>
+                        <span>{config.finalCtaButtonText || 'Request Service'}</span>
                       </>
                     )}
                   </button>
 
-                  <p className="text-[10px] text-center text-slate-400">
-                    🔒 Zero spam guarantee. Upfront flat-rate pricing provided prior to work.
-                  </p>
+                  {config.leadFormTrustText && config.leadFormTrustText.trim() !== '' && (
+                    <p className="text-[10px] text-center text-slate-400">
+                      {config.leadFormTrustText}
+                    </p>
+                  )}
                 </form>
               )}
             </div>
@@ -596,49 +617,53 @@ export const LiveWebsitePreview: React.FC<LiveWebsitePreviewProps> = ({ config, 
          5. WHY CHOOSE US
       ---------------------------------------------------- */}
       {((config.whyUsItems && config.whyUsItems.length > 0) || (config.trustBadges && config.trustBadges.length > 0) || config.whyUsHeading) && (
-        <section id="why-us" className="py-16 bg-slate-100">
-          <div className="max-w-7xl mx-auto px-4">
-            <div className="text-center max-w-2xl mx-auto mb-12">
+        <section id="why-us" className="py-12 md:py-16 lg:py-20 bg-slate-100 border-t border-slate-200/60 scroll-mt-20 md:scroll-mt-24">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center max-w-2xl mx-auto mb-10 md:mb-14">
               {(config.whyUsEyebrow === undefined || config.whyUsEyebrow.trim() !== '') && (
                 <span style={dynamicStyles.accentText} className="text-xs font-black uppercase tracking-widest block mb-2">
                   {config.whyUsEyebrow ? config.whyUsEyebrow : `Why Choose ${config.businessName}`}
                 </span>
               )}
               {(config.whyUsHeading === undefined || config.whyUsHeading.trim() !== '') && (
-                <h2 style={dynamicStyles.primaryText} className="text-3xl font-black tracking-tight">
-                  {config.whyUsHeading ? config.whyUsHeading : 'Why Homeowners Trust Our Team'}
+                <h2 style={dynamicStyles.primaryText} className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight">
+                  {config.whyUsHeading ? config.whyUsHeading : (isTarot ? 'Why Clients Choose Our Services' : isHVAC ? 'Why Customers Choose Our AC Services' : 'Why Customers Choose Our Services')}
                 </h2>
               )}
               {config.whyUsDescription && (
-                <p className="text-xs text-slate-600 mt-2 leading-relaxed">
+                <p className="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed">
                   {config.whyUsDescription}
                 </p>
               )}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
               {config.whyUsItems && config.whyUsItems.length > 0 ? (
                 config.whyUsItems.map((item, idx) => (
-                  <div key={idx} className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-3">
-                    <div style={dynamicStyles.accentBg} className="w-12 h-12 rounded-lg text-white flex items-center justify-center">
+                  <div key={idx} className="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between space-y-4">
+                    <div style={dynamicStyles.accentBg} className="w-12 h-12 rounded-xl text-white flex items-center justify-center shrink-0 shadow-md">
                       <ShieldCheck className="w-6 h-6" />
                     </div>
-                    <h3 className="text-lg font-bold text-slate-900">{item.title}</h3>
-                    <p className="text-xs text-slate-600 leading-relaxed">
-                      {item.description}
-                    </p>
+                    <div>
+                      <h3 className="text-lg md:text-xl font-bold text-slate-900 mb-2">{item.title}</h3>
+                      <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                        {item.description}
+                      </p>
+                    </div>
                   </div>
                 ))
               ) : config.trustBadges && config.trustBadges.length > 0 ? (
                 config.trustBadges.slice(0, 3).map((badge, idx) => (
-                  <div key={idx} className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-3">
-                    <div style={dynamicStyles.accentBg} className="w-12 h-12 rounded-lg text-white flex items-center justify-center">
+                  <div key={idx} className="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between space-y-4">
+                    <div style={dynamicStyles.accentBg} className="w-12 h-12 rounded-xl text-white flex items-center justify-center shrink-0 shadow-md">
                       <ShieldCheck className="w-6 h-6" />
                     </div>
-                    <h3 className="text-lg font-bold text-slate-900">{badge.title}</h3>
-                    <p className="text-xs text-slate-600 leading-relaxed">
-                      {badge.subtitle}
-                    </p>
+                    <div>
+                      <h3 className="text-lg md:text-xl font-bold text-slate-900 mb-2">{badge.title}</h3>
+                      <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                        {badge.subtitle}
+                      </p>
+                    </div>
                   </div>
                 ))
               ) : null}
@@ -650,64 +675,66 @@ export const LiveWebsitePreview: React.FC<LiveWebsitePreviewProps> = ({ config, 
       {/* ----------------------------------------------------
          6. SERVICES SECTION
       ---------------------------------------------------- */}
-      <section id="services" className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center max-w-2xl mx-auto mb-12">
+      <section id="services" className="py-12 md:py-16 lg:py-20 bg-white border-t border-slate-200/60 scroll-mt-20 md:scroll-mt-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-2xl mx-auto mb-10 md:mb-14">
             {(config.servicesEyebrow === undefined || config.servicesEyebrow.trim() !== '') && (
               <span style={dynamicStyles.accentText} className="text-xs font-black uppercase tracking-widest block mb-2">
-                {config.servicesEyebrow ? config.servicesEyebrow : 'Our Core Services'}
+                {config.servicesEyebrow ? config.servicesEyebrow : 'Our Services'}
               </span>
             )}
             {(config.servicesHeading === undefined || config.servicesHeading.trim() !== '') && (
-              <h2 style={dynamicStyles.primaryText} className="text-3xl font-black tracking-tight">
-                {config.servicesHeading ? config.servicesHeading : 'Comprehensive Local Trade Solutions'}
+              <h2 style={dynamicStyles.primaryText} className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight">
+                {config.servicesHeading ? config.servicesHeading : 'Professional Trade & Service Solutions'}
               </h2>
             )}
             {config.servicesDescription && (
-              <p className="text-xs text-slate-600 mt-2 leading-relaxed">
+              <p className="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed">
                 {config.servicesDescription}
               </p>
             )}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
             {config.services.map((srv) => (
               <div
                 key={srv.id}
-                className="bg-slate-50 border border-slate-200 rounded-2xl p-6 hover:shadow-lg transition flex flex-col justify-between group"
+                className="bg-slate-50 border border-slate-200 rounded-2xl p-6 md:p-8 hover:shadow-lg transition flex flex-col justify-between h-full group"
               >
-                <div>
-                  <div style={dynamicStyles.accentBg} className="w-12 h-12 rounded-xl text-white flex items-center justify-center mb-4 shadow-md group-hover:scale-110 transition">
+                <div className="flex-1 flex flex-col">
+                  <div style={dynamicStyles.accentBg} className="w-12 h-12 rounded-xl text-white flex items-center justify-center mb-4 shadow-md group-hover:scale-105 transition shrink-0">
                     {renderIcon(srv.iconName)}
                   </div>
                   <h3 className="text-xl font-bold text-slate-900 mb-2">{srv.title}</h3>
-                  <p className="text-xs text-slate-600 mb-4 leading-relaxed">{srv.description}</p>
+                  <p className="text-xs sm:text-sm text-slate-600 mb-4 leading-relaxed flex-1">{srv.description}</p>
 
-                  <ul className="space-y-2 mb-6">
-                    {srv.features.map((feat, fi) => (
-                      <li key={fi} className="text-xs text-slate-700 font-medium flex items-center gap-2">
-                        <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-                        <span>{feat}</span>
-                      </li>
-                    ))}
-                  </ul>
+                  {srv.features && srv.features.length > 0 && (
+                    <ul className="space-y-2 mb-6 pt-2 border-t border-slate-200/80">
+                      {srv.features.map((feat, fi) => (
+                        <li key={fi} className="text-xs sm:text-sm text-slate-700 font-medium flex items-center gap-2">
+                          <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                          <span>{feat}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
 
                 {displayPhone ? (
                   <a
                     href={`tel:${displayPhoneRaw}`}
                     style={dynamicStyles.primaryBg}
-                    className="w-full text-white font-bold text-xs py-3 rounded-lg text-center hover:opacity-95 transition block"
+                    className="w-full text-white font-bold text-xs sm:text-sm py-3 px-4 rounded-lg text-center hover:opacity-95 transition flex items-center justify-center gap-2 min-w-0 mt-auto"
                   >
-                    Book Service Now
+                    <span>{config.finalCtaButtonText || (isTarot ? 'Request Session' : isHVAC ? 'Request AC Service' : 'Request Service')}</span>
                   </a>
                 ) : (
                   <a
                     href="#contact"
                     style={dynamicStyles.primaryBg}
-                    className="w-full text-white font-bold text-xs py-3 rounded-lg text-center hover:opacity-95 transition block"
+                    className="w-full text-white font-bold text-xs sm:text-sm py-3 px-4 rounded-lg text-center hover:opacity-95 transition flex items-center justify-center gap-2 min-w-0 mt-auto"
                   >
-                    Request Free Quote
+                    <span>{config.finalCtaButtonText || (isTarot ? 'Request Session' : isHVAC ? 'Request AC Service' : 'Request Service')}</span>
                   </a>
                 )}
               </div>
@@ -720,32 +747,32 @@ export const LiveWebsitePreview: React.FC<LiveWebsitePreviewProps> = ({ config, 
          7. EMERGENCY CALLOUT BANNER
       ---------------------------------------------------- */}
       {(config.hasEmergencyService !== false && (Boolean(config.emergencyHeading) || Boolean(config.emergencyAvailability) || Boolean(config.emergencyDescription))) && (
-        <section className="py-12 px-4">
+        <section className="py-12 md:py-16 px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto">
             <div style={dynamicStyles.primaryBg} className="rounded-3xl p-8 lg:p-12 text-white text-center space-y-6 shadow-2xl relative overflow-hidden">
               <h2 className="text-2xl sm:text-4xl font-black">
                 {config.emergencyHeading || 'Emergency Service Needed Right Now?'}
               </h2>
-              <p className="text-sm sm:text-base text-slate-300 max-w-2xl mx-auto">
+              <p className="text-sm sm:text-base text-slate-300 max-w-2xl mx-auto leading-relaxed">
                 {config.emergencyDescription || `Need urgent assistance? Our local dispatch team is ready to assist you${displayCity ? ` in ${displayCity}` : ''}.`}
               </p>
               {displayPhone ? (
                 <a
                   href={`tel:${displayPhoneRaw}`}
                   style={dynamicStyles.accentBg}
-                  className="inline-flex items-center gap-2 text-white font-black text-base px-8 py-4 rounded-xl shadow-xl hover:scale-105 transition"
+                  className="inline-flex items-center justify-center gap-2 text-white font-black text-sm sm:text-base px-6 sm:px-8 py-3.5 sm:py-4 rounded-xl shadow-xl hover:scale-[1.02] transition whitespace-nowrap min-w-0 max-w-full text-center"
                 >
-                  <Phone className="w-5 h-5 animate-bounce" />
-                  <span>{config.emergencyCtaText || `Emergency Hotline: ${displayPhone}`}</span>
+                  <Phone className="w-5 h-5 animate-bounce shrink-0" />
+                  <span className="truncate">{config.emergencyCtaText || `Emergency Hotline: ${displayPhone}`}</span>
                 </a>
               ) : (
                 <a
                   href="#contact"
                   style={dynamicStyles.accentBg}
-                  className="inline-flex items-center gap-2 text-white font-black text-base px-8 py-4 rounded-xl shadow-xl hover:scale-105 transition"
+                  className="inline-flex items-center justify-center gap-2 text-white font-black text-sm sm:text-base px-6 sm:px-8 py-3.5 sm:py-4 rounded-xl shadow-xl hover:scale-[1.02] transition whitespace-nowrap min-w-0 max-w-full text-center"
                 >
-                  <Send className="w-5 h-5" />
-                  <span>{config.emergencyCtaText || 'Request Priority Service'}</span>
+                  <Send className="w-5 h-5 shrink-0" />
+                  <span className="truncate">{config.emergencyCtaText || 'Request Priority Service'}</span>
                 </a>
               )}
             </div>
@@ -757,25 +784,25 @@ export const LiveWebsitePreview: React.FC<LiveWebsitePreviewProps> = ({ config, 
          8. REVIEWS & TESTIMONIALS
       ---------------------------------------------------- */}
       {config.testimonials && config.testimonials.length > 0 && (
-        <section id="reviews" className="py-16 bg-slate-100">
-          <div className="max-w-7xl mx-auto px-4">
-            <div className="text-center max-w-2xl mx-auto mb-12">
+        <section id="reviews" className="py-12 md:py-16 lg:py-20 bg-slate-100 border-t border-slate-200/60 scroll-mt-20 md:scroll-mt-24">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center max-w-2xl mx-auto mb-10 md:mb-14">
               <span style={dynamicStyles.accentText} className="text-xs font-black uppercase tracking-widest block mb-1">
                 {config.reviewsEyebrow || (appMode === 'development' ? 'Sample Customer Testimonials' : 'Customer Testimonials')}
               </span>
-              <h2 style={dynamicStyles.primaryText} className="text-3xl font-black tracking-tight">
+              <h2 style={dynamicStyles.primaryText} className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight">
                 {config.reviewsHeading || `Customer Reviews ${displayReviewCount > 0 ? `(${displayReviewCount}+)` : ''}`}
               </h2>
-              <p className="text-xs text-slate-500 mt-1">
+              <p className="text-xs sm:text-sm text-slate-500 mt-1">
                 {config.reviewsDescription || (appMode === 'development'
                   ? '[Sample Template Reviews — Replace with real client feedback from Google Business Profile]'
                   : `Verified customer feedback and service ratings${displayCity ? ` across ${displayCity}` : ''}`)}
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
               {config.testimonials.map((t) => (
-                <div key={t.id} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                <div key={t.id} className="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
                   <div>
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex text-amber-400">
@@ -793,15 +820,15 @@ export const LiveWebsitePreview: React.FC<LiveWebsitePreviewProps> = ({ config, 
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-slate-700 italic leading-relaxed mb-4">
+                    <p className="text-xs sm:text-sm text-slate-700 italic leading-relaxed mb-4">
                       "{t.comment}"
                     </p>
                   </div>
 
                   <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
                     <div>
-                      <div className="text-xs font-extrabold text-slate-900">{t.author}</div>
-                      <div className="text-[10px] text-slate-500">{t.location} • {t.service}</div>
+                      <div className="text-xs sm:text-sm font-extrabold text-slate-900">{t.author}</div>
+                      <div className="text-[10px] sm:text-xs text-slate-500">{t.location} • {t.service}</div>
                     </div>
                     {appMode === 'development' && (
                       <span className="bg-slate-100 text-slate-600 text-[9px] font-bold px-2 py-0.5 rounded-full border border-slate-200">
@@ -815,10 +842,10 @@ export const LiveWebsitePreview: React.FC<LiveWebsitePreviewProps> = ({ config, 
 
             {/* Google Business Profile Review CTA */}
             {displayGbpUrl && (
-              <div className="mt-8 text-center bg-white p-4 rounded-xl border border-slate-200 flex flex-wrap items-center justify-between gap-3 shadow-sm max-w-2xl mx-auto">
+              <div className="mt-8 text-center bg-white p-4 sm:p-6 rounded-xl border border-slate-200 flex flex-wrap items-center justify-between gap-3 shadow-sm max-w-2xl mx-auto">
                 <div className="flex items-center gap-2">
                   <Star className="w-5 h-5 text-amber-400 fill-current shrink-0" />
-                  <span className="text-xs font-bold text-slate-800">
+                  <span className="text-xs sm:text-sm font-bold text-slate-800">
                     Read all reviews & ratings on Google Business Profile
                   </span>
                 </div>
@@ -826,7 +853,7 @@ export const LiveWebsitePreview: React.FC<LiveWebsitePreviewProps> = ({ config, 
                   href={displayGbpUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-4 py-2 rounded-lg transition inline-flex items-center gap-1.5"
+                  className="bg-blue-600 hover:bg-blue-500 text-white text-xs sm:text-sm font-bold px-4 py-2 rounded-lg transition inline-flex items-center gap-1.5 shrink-0"
                 >
                   <span>View Us On Google</span>
                   <Search className="w-3.5 h-3.5" />
@@ -843,29 +870,29 @@ export const LiveWebsitePreview: React.FC<LiveWebsitePreviewProps> = ({ config, 
       ---------------------------------------------------- */}
       {config.financingEnabled === true && (
         <section className="py-12 bg-white border-y border-slate-200">
-          <div className="max-w-7xl mx-auto px-4 flex flex-wrap items-center justify-between gap-6">
-            <div className="space-y-1">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-wrap items-center justify-between gap-6">
+            <div className="space-y-1 max-w-2xl">
               <div className="flex items-center gap-2">
-                <CreditCard className="w-5 h-5 text-blue-600" />
-                <h3 className="text-lg font-bold text-slate-900">
+                <CreditCard className="w-5 h-5 text-blue-600 shrink-0" />
+                <h3 className="text-lg sm:text-xl font-bold text-slate-900">
                   {config.financingTitle || 'Flexible Financing Options Available'}
                 </h3>
               </div>
-              <p className="text-xs text-slate-600">
+              <p className="text-xs sm:text-sm text-slate-600">
                 {config.financingDescription || 'Ask us about easy payment plans and flexible financing options for your project.'}
               </p>
             </div>
             {displayPhone ? (
               <a
                 href={`tel:${displayPhoneRaw}`}
-                className="bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold px-5 py-2.5 rounded-lg transition"
+                className="bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-bold px-5 py-2.5 rounded-lg transition shrink-0"
               >
                 {config.financingCtaText || 'Apply For Financing'}
               </a>
             ) : (
               <a
                 href="#contact"
-                className="bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold px-5 py-2.5 rounded-lg transition"
+                className="bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-bold px-5 py-2.5 rounded-lg transition shrink-0"
               >
                 {config.financingCtaText || 'Inquire About Financing'}
               </a>
@@ -878,29 +905,29 @@ export const LiveWebsitePreview: React.FC<LiveWebsitePreviewProps> = ({ config, 
          10. FAQS
       ---------------------------------------------------- */}
       {config.faqs && config.faqs.length > 0 && (
-        <section id="faqs" className="py-16 bg-slate-50">
-          <div className="max-w-4xl mx-auto px-4">
-            <div className="text-center mb-12">
+        <section id="faqs" className="py-12 md:py-16 lg:py-20 bg-slate-50 border-t border-slate-200/60 scroll-mt-20 md:scroll-mt-24">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center max-w-2xl mx-auto mb-10 md:mb-14">
               <span style={dynamicStyles.accentText} className="text-xs font-black uppercase tracking-widest block mb-2">
                 Got Questions?
               </span>
-              <h2 style={dynamicStyles.primaryText} className="text-3xl font-black tracking-tight">
+              <h2 style={dynamicStyles.primaryText} className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight">
                 {config.faqHeading || 'Frequently Asked Questions'}
               </h2>
             </div>
 
-            <div className="space-y-3">
+            <div className="max-w-3xl mx-auto space-y-3">
               {config.faqs.map((faq, idx) => (
                 <div key={idx} className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
                   <button
                     onClick={() => setActiveFaq(activeFaq === idx ? null : idx)}
-                    className="w-full text-left p-4 font-bold text-sm text-slate-900 flex items-center justify-between gap-4 hover:bg-slate-50"
+                    className="w-full text-left p-4 sm:p-5 font-bold text-xs sm:text-sm text-slate-900 flex items-center justify-between gap-4 hover:bg-slate-50 transition"
                   >
                     <span>{faq.question}</span>
                     {activeFaq === idx ? <ChevronUp className="w-4 h-4 text-blue-600 shrink-0" /> : <ChevronDown className="w-4 h-4 text-slate-400 shrink-0" />}
                   </button>
                   {activeFaq === idx && (
-                    <div className="px-4 pb-4 text-xs text-slate-600 leading-relaxed border-t border-slate-100 pt-3">
+                    <div className="px-4 sm:px-5 pb-4 sm:pb-5 text-xs sm:text-sm text-slate-600 leading-relaxed border-t border-slate-100 pt-3">
                       {faq.answer}
                     </div>
                   )}
@@ -915,43 +942,45 @@ export const LiveWebsitePreview: React.FC<LiveWebsitePreviewProps> = ({ config, 
          11. SERVICE AREAS & GOOGLE MAP
       ---------------------------------------------------- */}
       {((config.serviceAreas && config.serviceAreas.length > 0) || displayCity || config.googleMapsEmbedUrl) && (
-        <section className="py-16 bg-white border-t border-slate-200">
-          <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
-            <div className="space-y-4">
-              <span style={dynamicStyles.accentText} className="text-xs font-black uppercase tracking-widest block">
-                Local Service Coverage
-              </span>
-              <h2 style={dynamicStyles.primaryText} className="text-3xl font-black tracking-tight">
-                {config.serviceAreaHeading || `Servicing ${displayCity || config.businessName} & Surrounding Communities`}
-              </h2>
-              <p className="text-xs text-slate-600 leading-relaxed">
-                {config.serviceAreaDescription || 'Our mobile trucks are stationed across the metropolitan area for prompt on-site service.'}
-              </p>
+        <section className="py-12 md:py-16 lg:py-20 bg-white border-t border-slate-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className={`grid grid-cols-1 ${config.googleMapsEmbedUrl ? 'lg:grid-cols-12' : ''} gap-8 lg:gap-10 items-center`}>
+              <div className={`${config.googleMapsEmbedUrl ? 'lg:col-span-7' : 'max-w-4xl'} space-y-4`}>
+                <span style={dynamicStyles.accentText} className="text-xs font-black uppercase tracking-widest block">
+                  Local Service Coverage
+                </span>
+                <h2 style={dynamicStyles.primaryText} className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight max-w-4xl">
+                  {config.serviceAreaHeading || `Servicing ${displayCity || config.businessName} & Surrounding Communities`}
+                </h2>
+                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-2xl">
+                  {config.serviceAreaDescription || (isTarot ? 'Providing personal guidance and coaching sessions across Kochi, Kerala and online worldwide.' : isHVAC ? 'Providing doorstep AC repair, servicing and installation across Ernakulam, Kochi and nearby areas.' : `Providing professional services across ${displayCity || config.businessName || 'our service area'} and surrounding communities.`)}
+                </p>
 
-              {config.serviceAreas && config.serviceAreas.length > 0 && (
-                <div className="flex flex-wrap gap-2 pt-2">
-                  {config.serviceAreas.map((area, ai) => (
-                    <span key={ai} className="bg-slate-100 text-slate-800 text-xs font-bold px-3 py-1.5 rounded-lg border border-slate-200">
-                      📍 {area}
-                    </span>
-                  ))}
+                {config.serviceAreas && config.serviceAreas.length > 0 && (
+                  <div className="flex flex-wrap gap-2 pt-2">
+                    {config.serviceAreas.map((area, ai) => (
+                      <span key={ai} className="bg-slate-100 text-slate-800 text-xs font-bold px-3 py-1.5 rounded-lg border border-slate-200">
+                        📍 {area}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {config.googleMapsEmbedUrl && (
+                <div className="lg:col-span-5 rounded-2xl overflow-hidden border border-slate-200 shadow-md h-72 bg-slate-100">
+                  <iframe
+                    src={config.googleMapsEmbedUrl}
+                    width="100%"
+                    height="100%"
+                    style={{ border: 0 }}
+                    allowFullScreen
+                    loading="lazy"
+                    title="Service Map"
+                  />
                 </div>
               )}
             </div>
-
-            {config.googleMapsEmbedUrl && (
-              <div className="rounded-2xl overflow-hidden border border-slate-200 shadow-md h-72 bg-slate-100">
-                <iframe
-                  src={config.googleMapsEmbedUrl}
-                  width="100%"
-                  height="100%"
-                  style={{ border: 0 }}
-                  allowFullScreen
-                  loading="lazy"
-                  title="Service Map"
-                />
-              </div>
-            )}
           </div>
         </section>
       )}
@@ -959,14 +988,14 @@ export const LiveWebsitePreview: React.FC<LiveWebsitePreviewProps> = ({ config, 
       {/* ----------------------------------------------------
          12. FOOTER
       ---------------------------------------------------- */}
-      <footer style={dynamicStyles.primaryBg} className="text-slate-400 text-xs py-12 border-t border-white/10">
-        <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-8">
+      <footer style={dynamicStyles.primaryBg} className="text-slate-400 text-xs py-12 md:py-16 border-t border-white/10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
           <div className="space-y-3">
             <span className="font-black text-lg text-white block">{config.businessName}</span>
             {config.footerDescription !== undefined ? (
-              config.footerDescription && <p className="text-slate-400 leading-relaxed">{config.footerDescription}</p>
+              config.footerDescription && <p className="text-slate-400 leading-relaxed max-w-md">{config.footerDescription}</p>
             ) : (
-              config.tagline && <p className="text-slate-400 leading-relaxed">{config.tagline}</p>
+              config.tagline && <p className="text-slate-400 leading-relaxed max-w-md">{config.tagline}</p>
             )}
             {(displayAddress || displayCity) && (
               <p className="text-slate-300">
@@ -976,49 +1005,23 @@ export const LiveWebsitePreview: React.FC<LiveWebsitePreviewProps> = ({ config, 
           </div>
 
           {(displayPhone || displayEmail || config.businessHours || displayWebsiteUrl) && (
-            <div>
-              <h4 className="font-bold text-white mb-3 text-sm">Contact Info</h4>
-              <ul className="space-y-2">
+            <div className="space-y-3">
+              <h4 className="font-bold text-white text-sm">Contact Info</h4>
+              <ul className="space-y-2 text-xs text-slate-300">
                 {displayPhone && (
-                  <li>📞 Phone: <a href={`tel:${displayPhoneRaw}`} className="text-white hover:underline">{displayPhone}</a></li>
+                  <li>📞 Phone: <a href={`tel:${displayPhoneRaw}`} className="text-white font-semibold hover:underline">{displayPhone}</a></li>
                 )}
-                {displayEmail && <li>✉️ Email: {displayEmail}</li>}
-                {config.businessHours && <li>🕒 Hours: {config.businessHours}</li>}
+                {displayEmail && <li>✉️ Email: <span className="text-white">{displayEmail}</span></li>}
+                {config.businessHours && <li>🕒 Hours: <span className="text-white">{config.businessHours}</span></li>}
                 {displayWebsiteUrl && (
                   <li>🌐 Website: <a href={displayWebsiteUrl} target="_blank" rel="noopener noreferrer" className="text-white hover:underline">{displayWebsiteUrl}</a></li>
                 )}
               </ul>
             </div>
           )}
-
-          <div>
-            <h4 className="font-bold text-white mb-3 text-sm">Emergency Dispatch</h4>
-            {config.emergencyAvailability && (
-              <p className="leading-relaxed mb-3">
-                {config.emergencyAvailability}
-              </p>
-            )}
-            {displayPhone ? (
-              <a
-                href={`tel:${displayPhoneRaw}`}
-                style={dynamicStyles.accentBg}
-                className="inline-block text-white font-bold px-4 py-2 rounded text-xs"
-              >
-                Call {displayPhone}
-              </a>
-            ) : (
-              <a
-                href="#contact"
-                style={dynamicStyles.accentBg}
-                className="inline-block text-white font-bold px-4 py-2 rounded text-xs"
-              >
-                Request Free Quote
-              </a>
-            )}
-          </div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 pt-8 mt-8 border-t border-white/10 text-center text-[11px] text-slate-500">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 mt-8 border-t border-white/10 text-center text-xs text-slate-400">
           {config.footerCopyrightText !== undefined ? config.footerCopyrightText : `© ${new Date().getFullYear()} ${config.businessName}. All rights reserved.`}
         </div>
       </footer>
@@ -1026,32 +1029,32 @@ export const LiveWebsitePreview: React.FC<LiveWebsitePreviewProps> = ({ config, 
       {/* ----------------------------------------------------
          13. STICKY MOBILE BOTTOM BAR
       ---------------------------------------------------- */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-slate-200 p-2.5 flex items-center gap-2 shadow-2xl">
+      <div className="block md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t border-slate-200 p-2.5 sm:p-3 flex items-center justify-center gap-2 shadow-2xl max-w-full overflow-hidden">
         {displayPhone ? (
           <>
             <a
               href={`tel:${displayPhoneRaw}`}
               style={dynamicStyles.accentBg}
-              className="flex-1 text-white font-black text-xs py-3 rounded-lg text-center shadow flex items-center justify-center gap-1.5"
+              className="flex-1 inline-flex items-center justify-center gap-1.5 text-white font-black text-xs py-3 px-2.5 rounded-lg text-center shadow whitespace-nowrap min-w-0"
             >
-              <Phone className="w-4 h-4" />
-              <span>Call {displayPhone}</span>
+              <Phone className="w-4 h-4 shrink-0" />
+              <span className="truncate">Call {displayPhone}</span>
             </a>
             <a
               href="#contact"
               style={dynamicStyles.primaryBg}
-              className="flex-1 text-white font-bold text-xs py-3 rounded-lg text-center shadow"
+              className="flex-1 inline-flex items-center justify-center gap-1.5 text-white font-bold text-xs py-3 px-2.5 rounded-lg text-center shadow whitespace-nowrap min-w-0"
             >
-              Get Free Quote
+              <span className="truncate">{config.heroSecondaryCtaText || config.finalCtaButtonText || (isTarot ? 'Request Guidance' : isHVAC ? 'Request AC Service' : 'Request Service')}</span>
             </a>
           </>
         ) : (
           <a
             href="#contact"
             style={dynamicStyles.primaryBg}
-            className="w-full text-white font-bold text-xs py-3 rounded-lg text-center shadow"
+            className="w-full inline-flex items-center justify-center gap-1.5 text-white font-bold text-xs py-3 px-2.5 rounded-lg text-center shadow whitespace-nowrap min-w-0"
           >
-            Get Free Quote
+            <span className="truncate">{config.heroSecondaryCtaText || config.finalCtaButtonText || (isTarot ? 'Request Guidance' : isHVAC ? 'Request AC Service' : 'Request Service')}</span>
           </a>
         )}
       </div>
