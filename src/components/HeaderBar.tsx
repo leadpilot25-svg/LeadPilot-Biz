@@ -5,23 +5,27 @@ import { Wrench, SlidersHorizontal, Code2, Sparkles, Building2, Eye, ShieldAlert
 interface HeaderBarProps {
   currentConfig: ClientConfig;
   activePresetKey: string;
+  clientConfigs?: Record<string, ClientConfig>;
   onSelectPreset: (presetKey: string) => void;
   onOpenEditor: () => void;
   viewMode: 'preview' | 'leadpilot' | 'exporter';
   setViewMode: (mode: 'preview' | 'leadpilot' | 'exporter') => void;
   appMode: 'development' | 'client';
   setAppMode: (mode: 'development' | 'client') => void;
+  isClientDeployment?: boolean;
 }
 
 export const HeaderBar: React.FC<HeaderBarProps> = ({
   currentConfig,
   activePresetKey,
+  clientConfigs,
   onSelectPreset,
   onOpenEditor,
   viewMode,
   setViewMode,
   appMode,
   setAppMode,
+  isClientDeployment = false,
 }) => {
   return (
     <header className="bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-50 shadow-md">
@@ -69,12 +73,16 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
             <select
               value={activePresetKey}
               onChange={(e) => onSelectPreset(e.target.value)}
-              className="bg-slate-900 text-white text-xs font-bold py-1.5 px-3 rounded border border-slate-600 focus:outline-none focus:border-blue-500 cursor-pointer"
+              className="bg-slate-900 text-white text-xs font-bold py-1.5 px-3 rounded border border-slate-600 focus:outline-none focus:border-blue-500 cursor-pointer max-w-[260px] md:max-w-none truncate"
             >
               <optgroup label="🏆 Active Client Configurations">
-                <option value="demo-tarot">🏆 Demo Business (Tarot Coaching)</option>
+                {clientConfigs && (Object.entries(clientConfigs) as [string, ClientConfig][]).map(([key, cfg]) => (
+                  <option key={key} value={key}>
+                    🏢 {cfg.businessName} ({cfg.industry || key}) [{cfg.clientId}]
+                  </option>
+                ))}
               </optgroup>
-              <optgroup label="🛠️ Industry Demo Presets">
+              <optgroup label="🛠️ Industry Preset Templates (Start New Client)">
                 <option value="hvac">❄️ HVAC - Heating & Cooling</option>
                 <option value="plumbing">🚰 Plumbing & Drain Service</option>
                 <option value="roofing">🏠 Roofing & Construction</option>
@@ -140,25 +148,27 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
             )}
           </div>
 
-          {/* Mode Switcher Toggle Button */}
-          {appMode === 'development' ? (
-            <button
-              onClick={() => setAppMode('client')}
-              className="flex items-center gap-1.5 bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border border-emerald-500/50 px-3 py-1.5 rounded-lg text-xs font-extrabold transition shadow hover:scale-105"
-              title="Switch to Client Mode (Hides developer controls & presets)"
-            >
-              <Eye className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Client Mode</span>
-            </button>
-          ) : (
-            <button
-              onClick={() => setAppMode('development')}
-              className="flex items-center gap-1 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white px-2.5 py-1.5 rounded-lg text-xs font-semibold border border-slate-700 transition"
-              title="Switch back to Developer Mode"
-            >
-              <Wrench className="w-3.5 h-3.5 text-amber-400" />
-              <span className="hidden sm:inline">Dev Mode</span>
-            </button>
+          {/* Mode Switcher Toggle Button (Master Deployment Only) */}
+          {!isClientDeployment && (
+            appMode === 'development' ? (
+              <button
+                onClick={() => setAppMode('client')}
+                className="flex items-center gap-1.5 bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border border-emerald-500/50 px-3 py-1.5 rounded-lg text-xs font-extrabold transition shadow hover:scale-105"
+                title="Switch to Client Mode (Hides developer controls & presets)"
+              >
+                <Eye className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Client Mode</span>
+              </button>
+            ) : (
+              <button
+                onClick={() => setAppMode('development')}
+                className="flex items-center gap-1 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white px-2.5 py-1.5 rounded-lg text-xs font-semibold border border-slate-700 transition"
+                title="Switch back to Developer Mode"
+              >
+                <Wrench className="w-3.5 h-3.5 text-amber-400" />
+                <span className="hidden sm:inline">Dev Mode</span>
+              </button>
+            )
           )}
         </div>
 

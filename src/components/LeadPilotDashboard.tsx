@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ClientConfig, LeadItem, LeadStatus, ContactMethod } from '../types';
+import { LeadImportModal } from './LeadImportModal';
 import {
   getStoredLeads,
   fetchRemoteLeads,
@@ -96,10 +97,12 @@ export const LeadPilotDashboard: React.FC<LeadPilotDashboardProps> = ({ currentC
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedLead, setSelectedLead] = useState<LeadItem | null>(null);
 
-  // Enforce client isolation in Client Mode
+  // Enforce client isolation in Client Mode and sync active client in Dev Mode
   useEffect(() => {
     if (appMode === 'client') {
       setSelectedClientId(currentConfig.clientId || 'client-01');
+    } else if (currentConfig.clientId && selectedClientId !== 'all') {
+      setSelectedClientId(currentConfig.clientId);
     }
   }, [appMode, currentConfig.clientId]);
 
@@ -118,6 +121,14 @@ export const LeadPilotDashboard: React.FC<LeadPilotDashboardProps> = ({ currentC
   const [newNoteText, setNewNoteText] = useState('');
   const [followUpDateInput, setFollowUpDateInput] = useState('');
   const [followUpTimeInput, setFollowUpTimeInput] = useState('09:00');
+
+  // Import Leads modal state
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+
+  const handleImportSuccess = (importedCount: number, message: string) => {
+    refreshLocalLeads();
+    setActionNotification({ type: 'success', message });
+  };
 
   const endpoint = currentConfig.formEndpoint ? currentConfig.formEndpoint.trim() : '';
 
@@ -611,6 +622,15 @@ export const LeadPilotDashboard: React.FC<LeadPilotDashboardProps> = ({ currentC
               {lastSyncTime && <span className="text-[10px] text-slate-500 font-mono">({lastSyncTime})</span>}
             </button>
 
+            {/* Import Leads Action Button */}
+            <button
+              onClick={() => setIsImportModalOpen(true)}
+              className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-3.5 py-2 rounded-xl flex items-center gap-1.5 transition shadow"
+            >
+              <FileSpreadsheet className="w-3.5 h-3.5" />
+              <span>Import Leads</span>
+            </button>
+
             {/* Client Scope Filter (Dev Mode Only) */}
             {appMode === 'development' && (
               <div className="flex items-center gap-2 bg-slate-950 border border-slate-800 p-2 rounded-xl text-xs">
@@ -1070,16 +1090,26 @@ export const LeadPilotDashboard: React.FC<LeadPilotDashboardProps> = ({ currentC
               ))}
             </div>
 
-            {/* Search Input */}
-            <div className="relative w-full md:w-72">
-              <Search className="w-4 h-4 text-slate-500 absolute left-3 top-2.5" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search leads by name, phone, service..."
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-xs text-white placeholder-slate-500 outline-none focus:border-emerald-500"
-              />
+            {/* Search Input & Actions */}
+            <div className="flex items-center gap-2 w-full md:w-auto">
+              <div className="relative w-full md:w-64">
+                <Search className="w-4 h-4 text-slate-500 absolute left-3 top-2.5" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search leads..."
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-xs text-white placeholder-slate-500 outline-none focus:border-emerald-500"
+                />
+              </div>
+
+              <button
+                onClick={() => setIsImportModalOpen(true)}
+                className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-3.5 py-2 rounded-xl flex items-center gap-1.5 transition shadow shrink-0"
+              >
+                <FileSpreadsheet className="w-3.5 h-3.5" />
+                <span>Import Leads</span>
+              </button>
             </div>
           </div>
 
@@ -1499,6 +1529,14 @@ export const LeadPilotDashboard: React.FC<LeadPilotDashboardProps> = ({ currentC
           </div>
         </div>
       )}
+
+      {/* Import Leads Modal */}
+      <LeadImportModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        currentConfig={currentConfig}
+        onImportSuccess={handleImportSuccess}
+      />
 
     </div>
   );
