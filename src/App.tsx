@@ -7,7 +7,7 @@ import { ConfigEditorDrawer } from './components/ConfigEditorDrawer';
 import { LiveWebsitePreview } from './components/LiveWebsitePreview';
 import { LeadPilotDashboard } from './components/LeadPilotDashboard';
 import { CodeExporterModal } from './components/CodeExporterModal';
-import { IS_CLIENT_DEPLOYMENT, DEPLOYMENT_APP_MODE } from './config/appMode';
+import { IS_CLIENT_DEPLOYMENT, DEPLOYMENT_APP_MODE, CLIENT_ID_ENV } from './config/appMode';
 
 const INITIAL_CLIENT_CONFIGS: Record<string, ClientConfig> = {
   'demo-tarot': JSON.parse(JSON.stringify(DEMO_CLIENT_CONFIG)),
@@ -31,10 +31,50 @@ const INITIAL_CLIENT_CONFIGS: Record<string, ClientConfig> = {
   },
 };
 
+function getClientConfigForEnvClientId(envClientId: string): { key: string; config: ClientConfig } {
+  if (!envClientId) {
+    return { key: 'demo-tarot', config: JSON.parse(JSON.stringify(DEMO_CLIENT_CONFIG)) };
+  }
+
+  // 1. Direct match on key in CLIENT_PRESETS or INITIAL_CLIENT_CONFIGS
+  if (CLIENT_PRESETS[envClientId]) {
+    return { key: envClientId, config: JSON.parse(JSON.stringify(CLIENT_PRESETS[envClientId])) };
+  }
+  if (INITIAL_CLIENT_CONFIGS[envClientId]) {
+    return { key: envClientId, config: JSON.parse(JSON.stringify(INITIAL_CLIENT_CONFIGS[envClientId])) };
+  }
+
+  // 2. Match on clientId property across all preset sources
+  for (const [key, cfg] of Object.entries(CLIENT_PRESETS)) {
+    if (cfg.clientId === envClientId) {
+      return { key, config: JSON.parse(JSON.stringify(cfg)) };
+    }
+  }
+  for (const [key, cfg] of Object.entries(INITIAL_CLIENT_CONFIGS)) {
+    if (cfg.clientId === envClientId) {
+      return { key, config: JSON.parse(JSON.stringify(cfg)) };
+    }
+  }
+  for (const [key, cfg] of Object.entries(INDUSTRY_PRESETS)) {
+    if (cfg.clientId === envClientId) {
+      return { key: `client-${key}`, config: JSON.parse(JSON.stringify(cfg)) };
+    }
+  }
+
+  // 3. Fallback: clone DEMO_CLIENT_CONFIG with requested envClientId
+  const customConfig: ClientConfig = {
+    ...JSON.parse(JSON.stringify(DEMO_CLIENT_CONFIG)),
+    clientId: envClientId,
+    businessName: envClientId.replace(/[-_]/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase()),
+  };
+  return { key: envClientId, config: customConfig };
+}
+
 export default function App() {
   const [clientConfigs, setClientConfigs] = useState<Record<string, ClientConfig>>(() => {
     if (IS_CLIENT_DEPLOYMENT) {
-      return { 'demo-tarot': JSON.parse(JSON.stringify(DEMO_CLIENT_CONFIG)) };
+      const resolved = getClientConfigForEnvClientId(CLIENT_ID_ENV);
+      return { [resolved.key]: resolved.config };
     }
     try {
       const saved = localStorage.getItem('master_client_configs');
@@ -50,19 +90,31 @@ export default function App() {
     return INITIAL_CLIENT_CONFIGS;
   });
 
-  const [activePresetKey, setActivePresetKey] = useState<string>('demo-tarot');
-  const [currentConfig, setCurrentConfig] = useState<ClientConfig>(
-    () => clientConfigs['demo-tarot'] || DEMO_CLIENT_CONFIG
-  );
+  const [activePresetKey, setActivePresetKey] = useState<string>(() => {
+    if (IS_CLIENT_DEPLOYMENT) {
+      return getClientConfigForEnvClientId(CLIENT_ID_ENV).key;
+    }
+    return 'demo-tarot';
+  });
+
+  const [currentConfig, setCurrentConfig] = useState<ClientConfig>(() => {
+    if (IS_CLIENT_DEPLOYMENT) {
+      return getClientConfigForEnvClientId(CLIENT_ID_ENV).config;
+    }
+    return clientConfigs['demo-tarot'] || DEMO_CLIENT_CONFIG;
+  });
+
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'preview' | 'leadpilot' | 'exporter'>('preview');
   const [appMode, setAppMode] = useState<'development' | 'client'>(DEPLOYMENT_APP_MODE);
 
   useEffect(() => {
     if (IS_CLIENT_DEPLOYMENT) {
+      const resolved = getClientConfigForEnvClientId(CLIENT_ID_ENV);
       setAppMode('client');
-      setActivePresetKey('demo-tarot');
-      setCurrentConfig(CLIENT_PRESETS['demo-tarot'] || DEMO_CLIENT_CONFIG);
+      setActivePresetKey(resolved.key);
+      setCurrentConfig(resolved.config);
+      setClientConfigs({ [resolved.key]: resolved.config });
       if (viewMode === 'exporter') {
         setViewMode('preview');
       }

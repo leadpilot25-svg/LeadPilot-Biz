@@ -383,11 +383,14 @@ export const ConfigEditorDrawer: React.FC<ConfigEditorDrawerProps> = ({
                   type="text"
                   value={config.formEndpoint || ''}
                   onChange={(e) => handleFieldChange('formEndpoint', e.target.value)}
-                  placeholder="Leave blank for Demo Mode or enter Google Apps Script URL..."
+                  placeholder="https://script.google.com/macros/s/.../exec"
                   className="w-full bg-slate-950 border border-slate-700 rounded p-2 text-white font-mono outline-none focus:border-emerald-500"
                 />
-                <p className="text-[11px] text-slate-400 mt-1">
-                  When left blank or placeholder, form operates in Demo Mode and previews the Google Sheets Apps Script JSON payload.
+                <p className="text-[11px] text-amber-300/90 mt-1 leading-normal font-medium">
+                  Deploy the client's Google Apps Script Web App first, then paste the Web App URL here. The landing-page enquiry form and LeadPilot CRM use this endpoint.
+                </p>
+                <p className="text-[11px] text-slate-400 mt-0.5">
+                  When left blank, form operates in Demo Mode locally, but production deployment requires a valid Web App URL.
                 </p>
               </div>
 

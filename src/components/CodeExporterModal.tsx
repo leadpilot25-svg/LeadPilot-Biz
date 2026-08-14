@@ -9,16 +9,35 @@ import {
   generateGoogleAppsScript,
   generateReadmeMd,
 } from '../utils/codeGenerator';
-import { Copy, Check, Download, FileCode, FileText, CheckCircle } from 'lucide-react';
+import { Copy, Check, Download, FileCode, FileText, CheckCircle, AlertTriangle, XCircle } from 'lucide-react';
 
 interface CodeExporterModalProps {
   config: ClientConfig;
   onClose: () => void;
 }
 
+const isValidUrl = (urlStr?: string): boolean => {
+  if (!urlStr || typeof urlStr !== 'string') return false;
+  const trimmed = urlStr.trim();
+  if (!trimmed) return false;
+  try {
+    const parsed = new URL(trimmed);
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+  } catch {
+    return false;
+  }
+};
+
 export const CodeExporterModal: React.FC<CodeExporterModalProps> = ({ config, onClose }) => {
   const [activeTab, setActiveTab] = useState<'configJs' | 'clientJson' | 'indexHtml' | 'stylesCss' | 'appJs' | 'codeGs' | 'readmeMd'>('configJs');
   const [copiedTab, setCopiedTab] = useState<string | null>(null);
+
+  const isClientIdValid = Boolean(config.clientId && config.clientId.trim().length > 0);
+  const isBusinessNameValid = Boolean(config.businessName && config.businessName.trim().length > 0);
+  const isPhoneValid = Boolean((config.phone || config.businessPhone) && String(config.phone || config.businessPhone).trim().length > 0);
+  const isFormEndpointValid = isValidUrl(config.formEndpoint);
+
+  const isProductionReady = isClientIdValid && isBusinessNameValid && isPhoneValid && isFormEndpointValid;
 
   const files = {
     configJs: { name: 'config.js', content: generateConfigJs(config), lang: 'javascript' },
@@ -68,17 +87,21 @@ export const CodeExporterModal: React.FC<CodeExporterModalProps> = ({ config, on
               Master Code & Asset Exporter
             </h2>
             <p className="text-xs text-slate-400 mt-1">
-              Production-ready pure HTML, CSS, & JS bundle generated for <strong className="text-blue-400">{config.businessName}</strong>.
+              Production-ready pure HTML, CSS, & JS bundle generated for <strong className="text-blue-400">{config.businessName || 'Client'}</strong>.
             </p>
           </div>
 
           <div className="flex items-center gap-3">
             <button
               onClick={handleDownloadAll}
-              className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-4 py-2 rounded-lg transition shadow-lg"
+              className={`flex items-center gap-2 text-white text-xs font-bold px-4 py-2 rounded-lg transition shadow-lg ${
+                isProductionReady
+                  ? 'bg-emerald-600 hover:bg-emerald-500'
+                  : 'bg-amber-600/80 hover:bg-amber-500/90'
+              }`}
             >
               <Download className="w-4 h-4" />
-              Download All Files
+              {isProductionReady ? 'Download All Files' : 'Export Draft Files (Incomplete)'}
             </button>
             <button
               onClick={onClose}
@@ -89,13 +112,34 @@ export const CodeExporterModal: React.FC<CodeExporterModalProps> = ({ config, on
           </div>
         </div>
 
-        {/* 5-Minute Replication Banner */}
-        <div className="bg-emerald-950/40 border-b border-emerald-800/40 px-6 py-3 text-xs text-emerald-300 flex items-center gap-2">
-          <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
-          <span>
-            <strong>5-Minute Client Replication:</strong> To build a new client website, just copy <code className="bg-emerald-900/60 px-1.5 py-0.5 rounded text-emerald-200">config.js</code> or <code className="bg-emerald-900/60 px-1.5 py-0.5 rounded text-emerald-200">client.json</code> and edit the business details!
-          </span>
-        </div>
+        {/* Deployment Readiness Banner */}
+        {!isFormEndpointValid ? (
+          <div className="bg-amber-950/60 border-b border-amber-800/60 px-6 py-3 text-xs text-amber-200 flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <div className="flex items-start gap-2.5">
+              <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+              <div className="space-y-1">
+                <div className="font-bold text-amber-300">
+                  ⚠️ Production Export Warning: Google Apps Script Web App URL (formEndpoint) Required
+                </div>
+                <p className="text-amber-200/90 leading-relaxed">
+                  Deploy the client's Google Apps Script Web App first, then paste the Web App URL in <strong>Edit CONFIG &gt; Lead System</strong>.
+                  Without a valid <code className="bg-amber-900/60 px-1 py-0.5 rounded text-amber-100">formEndpoint</code>, landing page enquiry submissions will not be sent to Google Sheets or LeadPilot CRM.
+                </p>
+              </div>
+            </div>
+            <div className="shrink-0 flex items-center gap-2 bg-amber-900/40 px-3 py-1.5 rounded-lg border border-amber-700/50 text-[11px] font-mono">
+              <XCircle className="w-4 h-4 text-amber-400" />
+              <span>formEndpoint: missing/invalid</span>
+            </div>
+          </div>
+        ) : (
+          <div className="bg-emerald-950/40 border-b border-emerald-800/40 px-6 py-3 text-xs text-emerald-300 flex items-center gap-2">
+            <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
+            <span>
+              <strong>5-Minute Client Replication:</strong> <code className="bg-emerald-900/60 px-1.5 py-0.5 rounded text-emerald-200">formEndpoint</code> verified! To deploy a new client website, copy <code className="bg-emerald-900/60 px-1.5 py-0.5 rounded text-emerald-200">config.js</code> or <code className="bg-emerald-900/60 px-1.5 py-0.5 rounded text-emerald-200">client.json</code> and edit the business details!
+            </span>
+          </div>
+        )}
 
         {/* File Tabs */}
         <div className="flex border-b border-slate-800 bg-slate-900/60 px-4 overflow-x-auto text-xs font-bold">

@@ -5,8 +5,10 @@
  * - The application is locked to client view.
  * - Developer controls (Dev Mode toggle, Edit CONFIG, Industry Preset selector, Code Exporter) are disabled/omitted.
  * - There is no route or action to return to developer/master mode.
- * - Client data is isolated to the client's specific clientId.
+ * - Client identity is scoped to VITE_CLIENT_ID.
  */
+
+export const CLIENT_ID_ENV: string = ((import.meta as any).env?.VITE_CLIENT_ID || '').trim();
 
 export const IS_CLIENT_DEPLOYMENT =
   ((import.meta as any).env?.VITE_APP_MODE === 'client') ||

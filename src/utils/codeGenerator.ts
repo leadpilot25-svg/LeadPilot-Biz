@@ -1139,6 +1139,8 @@ export function generateGoogleAppsScript(config: ClientConfig): string {
  * Client Landing Page -> Google Apps Script Web App -> Google Sheet -> LeadPilot
  */
 
+const DEPLOYED_CLIENT_ID = "${config.clientId || 'client-01'}";
+
 function responseJSON(obj) {
   return ContentService.createTextOutput(JSON.stringify(obj))
     .setMimeType(ContentService.MimeType.JSON);
@@ -1150,6 +1152,11 @@ function doGet(e) {
     var sheet = ss.getSheetByName("Leads") || ss.getSheets()[0];
     if (sheet.getLastRow() <= 1) {
       return responseJSON({ status: "success", result: "success", leads: [] });
+    }
+
+    var requestedClientId = (e && e.parameter && e.parameter.clientId) ? e.parameter.clientId.toString().trim() : "";
+    if (requestedClientId && requestedClientId !== "all" && requestedClientId !== DEPLOYED_CLIENT_ID) {
+      return responseJSON({ status: "error", result: "error", message: "Unauthorized: Requested clientId does not match DEPLOYED_CLIENT_ID (" + DEPLOYED_CLIENT_ID + ")." });
     }
 
     var data = sheet.getDataRange().getValues();
@@ -1363,7 +1370,11 @@ function doPost(e) {
     var service = (data.service || data.Service || "").toString().trim();
     var details = (data.details || data.Details || "").toString().trim();
     var address = (data.address || data.Address || "").toString().trim();
-    var clientId = (data.clientId || "${config.clientId || 'client-01'}").toString().trim();
+    var clientId = (data.clientId || DEPLOYED_CLIENT_ID).toString().trim();
+    if (data.clientId && data.clientId.toString().trim() !== DEPLOYED_CLIENT_ID) {
+      // Enforce DEPLOYED_CLIENT_ID for this script deployment
+      clientId = DEPLOYED_CLIENT_ID;
+    }
     var businessName = (data.businessName || "${config.businessName}").toString().trim();
     var leadSource = (data.leadSource || "${config.leadSource || 'Google Search'}").toString().trim();
     var pageUrl = (data.pageUrl || "").toString().trim();
